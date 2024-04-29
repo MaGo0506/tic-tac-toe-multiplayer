@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import { io } from "socket.io-client";
 import './App.css';
 import SocketServiceClass from "./services/socketService";
 import JoinRoom from "./components/joinRoom";
 import GameContext, { GameContextProps } from "./gameContext";
-
-// const socket = io("http://localhost:3001");
+import TicTacToe from "./components/ticTacToe";
 
 const AppContainer = styled.div`
   width: 100%;
@@ -54,7 +52,8 @@ function App() {
       <AppContainer>
         <WelcomeText>Welcome to Tic-Tac-Toe</WelcomeText>
         <MainContainer>
-          <JoinRoom />
+          {!isInRoom && <JoinRoom />}
+          {isInRoom && <TicTacToe />}
         </MainContainer>
       </AppContainer>
     </GameContext.Provider>
