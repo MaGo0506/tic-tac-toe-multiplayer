@@ -4,6 +4,7 @@ const app = express();
 const server = http.createServer(app);
 
 import { Server } from "socket.io";
+const roomController = require("./controllers/roomController");
 
 const io = new Server(server, {
   cors: {
@@ -17,7 +18,11 @@ io.on("connection", (socket) => {
   socket.on('client-ready', () => {
     console.log('client ready', socket.id);
   })
-})
+
+  socket.on("join-game", (message) => {
+    roomController.joinGame({ io, socket, message });
+  });
+});
 
 server.listen(3001, () => {
   console.log("Server listening on port 3001");
