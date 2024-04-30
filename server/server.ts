@@ -27,6 +27,10 @@ io.on("connection", (socket) => {
   socket.on("update-game", (message) => {
     gameController.updateGame({ io, socket, message });
   });
+
+  socket.on("game-win", (message) => {
+    gameController.gameWin({ io, socket, message });
+  })
 });
 
 server.listen(3001, () => {

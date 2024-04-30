@@ -22,6 +22,14 @@ class GameService {
   public async onGameStart(socket: Socket, listener: (options: StartGame) => void) {
     socket.on("start-game", listener);
   }
+
+  public async gameWin(socket: Socket, message: string) {
+    socket.emit("game-win", { message });
+  }
+
+  public async onGameWin(socket: Socket, listener: (message: string) => void) {
+    socket.on("on-game-win", ({ message }) => listener(message));
+  }
 }
 
 const GameServiceClass = new GameService();

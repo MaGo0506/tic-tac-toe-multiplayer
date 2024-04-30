@@ -89,6 +89,53 @@ const TicTacToe = () => {
     isGameStarted
   } = useContext(gameContext);
 
+  const checkGameState = (matrix: PlayMatrix) => {
+    for (let i = 0; i < matrix.length; i++) {
+      let row = [];
+      for (let j = 0; j < matrix[i].length; j++) {
+        row.push(matrix[i][j]);
+      }
+
+      if (row.every((value) => value && value === playerSymbol)) {
+        return [true, false];
+      } else if (row.every((value) => value && value !== playerSymbol)) {
+        return [false, true];
+      }
+    }
+
+    for (let i = 0; i < matrix.length; i++) {
+      let column = [];
+      for (let j = 0; j < matrix[i].length; j++) {
+        column.push(matrix[j][i]);
+      }
+
+      if (column.every((value) => value && value === playerSymbol)) {
+        return [true, false];
+      } else if (column.every((value) => value && value !== playerSymbol)) {
+        return [false, true];
+      }
+    }
+
+    if (matrix[1][1]) {
+      if (matrix[0][0] === matrix[1][1] && matrix[2][2] === matrix[1][1]) {
+        if (matrix[1][1] === playerSymbol) return [true, false];
+        else return [false, true];
+      }
+
+      if (matrix[2][0] === matrix[1][1] && matrix[0][2] === matrix[1][1]) {
+        if (matrix[1][1] === playerSymbol) return [true, false];
+        else return [false, true];
+      }
+    }
+
+    // Check for a tie
+    if (matrix.every((m) => m.every((v) => v !== null))) {
+      return [true, true];
+    }
+
+    return [false, false];
+  };
+
   const updateGameMatrix = (column: number, row: number, symbol: "x" | "o") => {
     const newMatrix = [...matrix]
 
@@ -99,15 +146,25 @@ const TicTacToe = () => {
 
     if (SocketServiceClass.socket) {
       GameServiceClass.updateGame(SocketServiceClass.socket, newMatrix);
+      const [currentPlayerWon, otherPlayerWon] = checkGameState(newMatrix);
+
+      if (currentPlayerWon && otherPlayerWon) {
+        GameServiceClass.gameWin(SocketServiceClass.socket, "The Game is a Tie!")
+        alert("The Game is a Tie!")
+      } else if (currentPlayerWon && !otherPlayerWon) {
+        GameServiceClass.gameWin(SocketServiceClass.socket, "You Lost!");
+        alert("You Won!");
+      }
       setPlayerTurn(false);
     }
-  }
+  };
 
   const handleGameUpdate = () => {
     if (SocketServiceClass.socket) {
       GameServiceClass.onGameUpdate(SocketServiceClass.socket, (newMatrix) => {
         setMatrix(newMatrix);
         setPlayerTurn(true);
+        checkGameState(newMatrix)
       });
     }
   }
@@ -121,21 +178,27 @@ const TicTacToe = () => {
         console.log('isGameStarted', isGameStarted);
         setPlayerSymbol(options.symbol);
         if (options.start) {
-          console.log('1', options);
-
           setPlayerTurn(true);
         } else {
-          console.log('2', options);
-
           setPlayerTurn(false);
         }
       });
     }
   }
 
+  const handleGameWin = () => {
+    if (SocketServiceClass.socket) {
+      GameServiceClass.onGameWin(SocketServiceClass.socket, (message) => {
+        setPlayerTurn(false);
+        alert(message)
+      })
+    }
+  }
+
   useEffect(() => {
     handleGameUpdate();
     handleGameStart();
+    handleGameWin();
   }, [])
 
   return (

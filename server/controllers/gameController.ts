@@ -19,3 +19,8 @@ exports.updateGame = async ({ io, socket, message }: updateGame) => {
   const gameRoom = getSocketGameRoom(socket);
   socket.to(gameRoom).emit("on-game-update", message);
 };
+
+exports.gameWin = async ({ io, socket, message }: updateGame) => {
+  const gameRoom = getSocketGameRoom(socket);
+  socket.to(gameRoom).emit("on-game-win", message);
+};
