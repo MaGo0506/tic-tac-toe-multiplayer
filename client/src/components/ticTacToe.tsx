@@ -68,6 +68,10 @@ const O = styled.span`
 `;
 
 export type PlayMatrix = Array<Array<string | null>>;
+export interface StartGame {
+  start: boolean;
+  symbol: "x" | "o";
+}
 
 const TicTacToe = () => {
   const [matrix, setMatrix] = useState<PlayMatrix>([
@@ -76,7 +80,14 @@ const TicTacToe = () => {
     [null, null, null]
   ]);
 
-  const { playerSymbol, setPlayerSymbol } = useContext(gameContext);
+  const {
+    playerSymbol,
+    setPlayerSymbol,
+    setPlayerTurn,
+    isPlayerTurn,
+    setGameStarted,
+    isGameStarted
+  } = useContext(gameContext);
 
   const updateGameMatrix = (column: number, row: number, symbol: "x" | "o") => {
     const newMatrix = [...matrix]
@@ -88,6 +99,7 @@ const TicTacToe = () => {
 
     if (SocketServiceClass.socket) {
       GameServiceClass.updateGame(SocketServiceClass.socket, newMatrix);
+      setPlayerTurn(false);
     }
   }
 
@@ -95,16 +107,43 @@ const TicTacToe = () => {
     if (SocketServiceClass.socket) {
       GameServiceClass.onGameUpdate(SocketServiceClass.socket, (newMatrix) => {
         setMatrix(newMatrix);
-      })
+        setPlayerTurn(true);
+      });
+    }
+  }
+
+  const handleGameStart = () => {
+    if (SocketServiceClass.socket) {
+
+      GameServiceClass.onGameStart(SocketServiceClass.socket, (options) => {
+        console.log(SocketServiceClass.socket)
+        setGameStarted(true);
+        console.log('isGameStarted', isGameStarted);
+        setPlayerSymbol(options.symbol);
+        if (options.start) {
+          console.log('1', options);
+
+          setPlayerTurn(true);
+        } else {
+          console.log('2', options);
+
+          setPlayerTurn(false);
+        }
+      });
     }
   }
 
   useEffect(() => {
     handleGameUpdate();
+    handleGameStart();
   }, [])
 
   return (
     <GameContainer>
+      {!isGameStarted && (
+        <h2>Waiting for the other Player to join..</h2>
+      )}
+      {(!isGameStarted || !isPlayerTurn) && <PlayStopper />}
       {matrix.map((row, rowId) => {
         return (
           <RowContainer key={rowId}>
@@ -115,7 +154,9 @@ const TicTacToe = () => {
                 borderLeft={columnId > 0}
                 borderBottom={rowId < 2}
                 borderTop={rowId > 0}
-                onClick={() => updateGameMatrix(columnId, rowId, playerSymbol)}
+                onClick={() =>
+                  updateGameMatrix(columnId, rowId, playerSymbol)
+                }
               >
                 {column && column !== "null" ? column === "x" ? <X /> : <O /> : null}
               </Cell>

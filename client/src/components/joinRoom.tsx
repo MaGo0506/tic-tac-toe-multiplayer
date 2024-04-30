@@ -57,12 +57,7 @@ const JoinRoom = (props: JoinRoomProops) => {
   }
 
   const joinRoom = async (e: React.FormEvent) => {
-
-    console.log('here');
-
     e.preventDefault();
-    console.log('there');
-
 
     const socket = SocketServiceClass.socket;
     if (!roomName || roomName.trim() === "" || !socket) return;

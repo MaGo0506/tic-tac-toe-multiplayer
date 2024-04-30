@@ -1,5 +1,5 @@
 import { Socket } from "socket.io-client";
-import { PlayMatrix } from "../../components/ticTacToe";
+import { StartGame, PlayMatrix } from "../../components/ticTacToe";
 
 class GameService {
 
@@ -17,6 +17,10 @@ class GameService {
 
   public async onGameUpdate(socket: Socket, listener: (matrix: PlayMatrix) => void) {
     socket.on("on-game-update", ({ matrix }) => listener(matrix));
+  }
+
+  public async onGameStart(socket: Socket, listener: (options: StartGame) => void) {
+    socket.on("start-game", listener);
   }
 }
 

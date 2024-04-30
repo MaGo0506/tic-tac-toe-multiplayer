@@ -21,5 +21,14 @@ exports.joinGame = async ({ io, socket, message }: joinGame) => {
   } else {
     await socket.join(message.roomId);
     socket.emit("room-joined");
+
+    if (connectedSockets && connectedSockets.size === 2) {
+      console.log(socket);
+
+      socket.emit("start-game", { start: true, symbol: "x" })
+      socket
+        .to(message.roomId)
+        .emit("start-game", { start: false, symbol: "o" });
+    }
   }
 };
