@@ -30,6 +30,7 @@ const MainContainer = styled.div`
 
 function App() {
   const [isInRoom, setInRoom] = useState(false);
+  const [playerSymbol, setPlayerSymbol] = useState<"x" | "o">('x');
 
   const connectSocket = async () => {
     const socket = await SocketServiceClass.connect("http://localhost:3001").catch(err => {
@@ -44,7 +45,9 @@ function App() {
 
   const gameContextValue: GameContextProps = {
     isInRoom,
-    setInRoom
+    setInRoom,
+    playerSymbol,
+    setPlayerSymbol
   }
 
   return (

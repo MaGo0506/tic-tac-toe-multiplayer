@@ -5,6 +5,7 @@ const server = http.createServer(app);
 
 import { Server } from "socket.io";
 const roomController = require("./controllers/roomController");
+const gameController = require("./controllers/gameController");
 
 const io = new Server(server, {
   cors: {
@@ -21,6 +22,10 @@ io.on("connection", (socket) => {
 
   socket.on("join-game", (message) => {
     roomController.joinGame({ io, socket, message });
+  });
+
+  socket.on("update-game", (message) => {
+    gameController.updateGame({ io, socket, message });
   });
 });
 

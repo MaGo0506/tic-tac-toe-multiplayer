@@ -1,5 +1,8 @@
-import React, { useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import styled from "styled-components";
+import gameContext from "../gameContext";
+import GameServiceClass from "../services/socketService/gameService";
+import SocketServiceClass from "../services/socketService";
 
 const GameContainer = styled.div`
   display: flex;
@@ -73,6 +76,33 @@ const TicTacToe = () => {
     [null, null, null]
   ]);
 
+  const { playerSymbol, setPlayerSymbol } = useContext(gameContext);
+
+  const updateGameMatrix = (column: number, row: number, symbol: "x" | "o") => {
+    const newMatrix = [...matrix]
+
+    if (newMatrix[row][column] === null || newMatrix[row][column] === "null") {
+      newMatrix[row][column] = symbol;
+      setMatrix(newMatrix);
+    }
+
+    if (SocketServiceClass.socket) {
+      GameServiceClass.updateGame(SocketServiceClass.socket, newMatrix);
+    }
+  }
+
+  const handleGameUpdate = () => {
+    if (SocketServiceClass.socket) {
+      GameServiceClass.onGameUpdate(SocketServiceClass.socket, (newMatrix) => {
+        setMatrix(newMatrix);
+      })
+    }
+  }
+
+  useEffect(() => {
+    handleGameUpdate();
+  }, [])
+
   return (
     <GameContainer>
       {matrix.map((row, rowId) => {
@@ -85,6 +115,7 @@ const TicTacToe = () => {
                 borderLeft={columnId > 0}
                 borderBottom={rowId < 2}
                 borderTop={rowId > 0}
+                onClick={() => updateGameMatrix(columnId, rowId, playerSymbol)}
               >
                 {column && column !== "null" ? column === "x" ? <X /> : <O /> : null}
               </Cell>
